@@ -29,6 +29,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView imageView;
     private final int IMG_REQUEST = 1;
     private Bitmap bitmap;
+    private Files file;
     private String UploadUrl = "http://198.199.74.228/api/v1/users/profile/image/2/";
 //    private String UploadUrl = "http://198.199.74.228/auth/login/";
 
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Uri path = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
+                //file = MediaStore.Files.FileColumn;
                 imageView.setImageBitmap(bitmap);
                 imageView.setVisibility(View.VISIBLE);
                 editText.setVisibility(View.VISIBLE);
@@ -100,78 +103,94 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void uploadImage() {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, UploadUrl, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-                try {
-                    JSONObject jsonObject = new JSONObject(response);
-                    String Response = jsonObject.getString("response");
-                    Toast.makeText(MainActivity.this, Response, Toast.LENGTH_LONG).show();
-                    imageView.setImageResource(0);
-                    imageView.setVisibility(View.GONE);
-                    editText.setText("");
-                    editText.setVisibility(View.GONE);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-//        JSONObject loginBody = new JSONObject();
+//        StringRequest stringRequest = new StringRequest(Request.Method.POST, UploadUrl
+//                , new Response.Listener<String>() {
+//            @Override
+//            public void onResponse(String response) {
 //
-//        try {
-//            loginBody.put("file",  imageToString(bitmap));
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+//                try {
 //
-//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-//                (Request.Method.POST, UploadUrl, loginBody,new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            if (response.getInt("status") == 1) {
+//                    JSONObject jsonObject = new JSONObject(response);
+//                    String Response = jsonObject.getString("data");
+//                    Toast.makeText(MainActivity.this, Response, Toast.LENGTH_LONG).show();
+//                    imageView.setImageResource(0);
+//                    imageView.setVisibility(View.GONE);
+//                    editText.setText("");
+//                    editText.setVisibility(View.GONE);
+//                    System.out.println("Response" + Response);
+//                } catch (JSONException e) {
+//                    JSONObject jsonObject = null;
+//                    try {
+//                        jsonObject = new JSONObject(response);
+//                        String Response = jsonObject.getString("data");
+//                        System.out.println("Response" + Response);
+//                    } catch (JSONException ex) {
+//                        ex.printStackTrace();
+//                    }
+//                    e.printStackTrace();
+//                }
+//
+//            }
+
+        JSONObject loginBody = new JSONObject();
+
+        try {
+            loginBody.put("file",  imageToString(bitmap));
+//            loginBody.put("user",  2);
+//            loginBody.put("id",  9);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.POST, UploadUrl, loginBody,new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if (response.getInt("status") == 1) {
+
+                                System.out.println("onReponseProfile: " + response);
 //                                Intent myIntent = new Intent(getBaseContext(), MainActivity.class);
 //                                Log.d("Login", "onResponse: id " + response.getString("id"));
 //                                System.out.println("Token: " + response.getString("user"));
 //                                startActivity(myIntent);
-//                            } else {
-//                                Context context = getApplicationContext();
-////                                CharSequence messages = response.getString("status");
-////                                int duration = Toast.LENGTH_LONG;
-//
-//                                Toast toast = Toast.makeText(context, "Nada", Toast.LENGTH_LONG);
-//                                toast.show();
-//                            }
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
+                            } else {
+                                System.out.println("onReponseERRORProfile: " + response);
+                                Context context = getApplicationContext();
+                                CharSequence messages = response.getString("message");
+                                int duration = Toast.LENGTH_LONG;
+
+                                Toast toast = Toast.makeText(context, messages, Toast.LENGTH_LONG);
+                                toast.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
 
             }
         }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("file", imageToString(bitmap));
-
-                return params;
-            }
+//            @Override
+//            protected Map<String, String> getParams() throws AuthFailureError {
+//                Map<String, String> params = new HashMap<>();
+//                params.put("file", imageToString(bitmap));
+//
+//                return params;
+//            }
 
             @Override
             public Map getHeaders() throws AuthFailureError {
                 HashMap headers = new HashMap();
                 headers.put("Content-Type", "application/json");
-                headers.put("Authorization", "Token 4c177f9a23cc974952f7a93cde0b08447856cbcd83f33736480d3bb5ce63d0ea");
+                headers.put("Authorization", "Token 22796d2fd0d5c3397d0a9cb4e151f1b7067c364771cbfe041f461df1c4482b80");
                 return headers;
             }
         };
 
-        MySingleton.getInstance(MainActivity.this).addToRequestQueue(stringRequest);
+        MySingleton.getInstance(MainActivity.this).addToRequestQueue(jsonObjectRequest);
     }
 
     private String imageToString(Bitmap bitmap) {
